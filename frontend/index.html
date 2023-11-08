@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body onload="loadData()">
+    <div id="display"></div>
+    <hr>
+    <div id="myCart"></div>
+    <a href="login.html">Login</a>
+    <button onclick="checkOut()">Checkout</button>
+    <script>
+        let cart = []
+        const MY_SERVER = "http://127.0.0.1:8000/"
+        let products = []
+        const load_display = async () => {
+            const res = await axios.get(MY_SERVER + "products")
+            products = res.data
+            display.innerHTML = `<div class="row row-cols-1 row-cols-md-3 g-4">` + res.data.map((prod, ind) => `
+            <div class="col">
+            <div class="card">
+            <img src=${prod.img} class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">${prod.price}</h5>
+              <p class="card-text">${prod.description}</p>
+              <button onClick='buy(${ind})'>BUY</button>
+            </div>
+            </div>
+            </div>
+          `)
+            display.innerHTML += "</div>"
+        }
+        load_display()
+        const buy = (ind) => {
+            product = products[ind]
+            // {id: 2, description: 'apple', price: 4, img: '/apple_kZ3Dp6C.jpg', category: 2}
+
+            // console.log(product);
+            if (cart.filter(item => item.id === product.id).length > 0) {
+                currentProduct = cart.filter(item => item.id === product.id)[0]
+                // console.log(currentProduct);
+                currentProduct.amount = parseInt(currentProduct.amount) + 1
+            }
+            else {
+                cart.push({ id: product.id, description: product.description, price: product.price, img: product.img, category: product.category, amount: 1,product:2 })
+            }
+            // console.table(cart);
+            localStorage.setItem('cart', JSON.stringify(cart))
+            myCart.innerHTML = `<div class="row row-cols-1 row-cols-md-5 g-2">` + cart.map((prod, ind) => `
+            <div class="col">
+            <div class="card">
+            <img src=${prod.img} class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">${prod.price}</h5>
+              <p class="card-text">${prod.description}, amount ${prod.amount}</p>
+            </div>
+            </div>
+            </div>
+          `)
+            myCart.innerHTML += "</div>"
+
+
+        }
+        const loadData = () => {
+            temp = localStorage.getItem('cart')
+            if (temp === null) {
+                console.log("storage empty");
+            } else {
+                cart = JSON.parse(localStorage.getItem('cart'))
+            }
+        }
+
+      
+        const checkOut = async () => {
+            const token = sessionStorage.getItem("token")
+            const myCart = cart
+            console.log(cart);
+            console.log(token);
+            let response = await axios.post(MY_SERVER + "order",  {"items":cart.data} , {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token,
+                },
+            });
+            console.log(response.data);
+        }
+    </script>
+</body>
+
+</html>

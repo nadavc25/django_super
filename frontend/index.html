@@ -4,94 +4,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Supermarket</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(45deg, #007BFF, #00BCD4);
+            color: #ffffff;
+            text-align: center;
+            padding: 1em;
+            border-radius: 5px;
+        }
+
+        .container {
+            margin: 2em auto;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 1em;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card {
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 1em;
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-img-top {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px 10px 0 0;
+            object-fit: cover;
+            max-height: 200px;
+            /* Set a maximum height for uniformity */
+        }
+
+        .card-body {
+            text-align: center;
+        }
+
+        .buy-btn {
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .buy-btn:hover {
+            background-color: #218838;
+        }
+
+        .cart-btn {
+            background-color: #ffc107;
+            color: #000000;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .cart-btn:hover {
+            background-color: #ffb400;
+        }
+    </style>
 </head>
 
-<body onload="loadData()">
-    <div id="display"></div>
-    <hr>
-    <div id="myCart"></div>
-    <a href="login.html">Login</a>
-    <button onclick="checkOut()">Checkout</button>
+<body>
+    <header>
+        <h1>Supermarket</h1>
+        <!-- Display the username if logged in -->
+        <div id="usernameDisplay"></div>
+    </header>
+    <div class="container" id="productsContainer">
+        <!-- Product cards will be added here dynamically -->
+    </div>
+
+    <div class="container mt-4" id="cartContainer">
+        <h2>Your Cart</h2>
+        <div id="cart"></div>
+        <button onclick="checkout()" class="btn btn-primary mt-2">Checkout</button>
+    </div>
+
     <script>
-        let cart = []
-        const MY_SERVER = "http://127.0.0.1:8000/"
-        let products = []
-        const load_display = async () => {
-            const res = await axios.get(MY_SERVER + "products")
-            products = res.data
-            display.innerHTML = `<div class="row row-cols-1 row-cols-md-3 g-4">` + res.data.map((prod, ind) => `
-            <div class="col">
-            <div class="card">
-            <img src=${prod.img} class="card-img-top" alt="...">
-            <div class="card-body">
-              <h5 class="card-title">${prod.price}</h5>
-              <p class="card-text">${prod.description}</p>
-              <button onClick='buy(${ind})'>BUY</button>
-            </div>
-            </div>
-            </div>
-          `)
-            display.innerHTML += "</div>"
-        }
-        load_display()
-        const buy = (ind) => {
-            product = products[ind]
-            // {id: 2, description: 'apple', price: 4, img: '/apple_kZ3Dp6C.jpg', category: 2}
+        const productsContainer = document.getElementById('productsContainer');
+        const cartContainer = document.getElementById('cartContainer');
+        const cart = document.getElementById('cart');
+        let products = [];
+        let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
 
-            // console.log(product);
-            if (cart.filter(item => item.id === product.id).length > 0) {
-                currentProduct = cart.filter(item => item.id === product.id)[0]
-                // console.log(currentProduct);
-                currentProduct.amount = parseInt(currentProduct.amount) + 1
+        const renderProducts = (products) => {
+            productsContainer.innerHTML = `<div class="row row-cols-1 row-cols-md-2 g-4">` +
+                products.map(product => `
+                    <div class="col">
+                        <div class="card product-card">
+                            <img src="${product.img}" class="card-img-top" alt="Product Image">
+                            <div class="card-body">
+                                <h5 class="card-title">${product.description}</h5>
+                                <p class="card-text">$${product.price.toFixed(2)}</p>
+                                <button onclick="addToCart(${product.id})" class="btn btn-success buy-btn">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('') +
+                `</div>`;
+        };
+
+        const addToCart = (productId) => {
+            const product = products.find(p => p.id === productId);
+
+            if (product) {
+                const existingItem = cartItems.find(item => item.id === productId);
+
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cartItems.push({ ...product, quantity: 1 });
+                }
+
+                updateCartDisplay();
+                saveCartToLocalStorage();
             }
-            else {
-                cart.push({ id: product.id, description: product.description, price: product.price, img: product.img, category: product.category, amount: 1,product:2 })
-            }
-            // console.table(cart);
-            localStorage.setItem('cart', JSON.stringify(cart))
-            myCart.innerHTML = `<div class="row row-cols-1 row-cols-md-5 g-2">` + cart.map((prod, ind) => `
-            <div class="col">
-            <div class="card">
-            <img src=${prod.img} class="card-img-top" alt="...">
-            <div class="card-body">
-              <h5 class="card-title">${prod.price}</h5>
-              <p class="card-text">${prod.description}, amount ${prod.amount}</p>
-            </div>
-            </div>
-            </div>
-          `)
-            myCart.innerHTML += "</div>"
+        };
+
+        const updateCartDisplay = () => {
+            cart.innerHTML = cartItems.map(item => `
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h6 class="card-title">${item.description}</h6>
+                        <p class="card-text">Quantity: ${item.quantity}</p>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const saveCartToLocalStorage = () => {
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+        };
 
 
-        }
-        const loadData = () => {
-            temp = localStorage.getItem('cart')
-            if (temp === null) {
-                console.log("storage empty");
+
+        // Fetch products from the server
+        axios.get('http://127.0.0.1:8000/products')
+            .then(response => {
+                products = response.data;
+                renderProducts(products);
+                // Update the UI after fetching products
+                updateUI();
+            })
+            .catch(error => console.error(error));
+
+        const checkout = async () => {
+            const token = sessionStorage.getItem("token");
+
+            if (token) {
+                try {
+                    const user = getUsername(token);  // Get user information from the session
+
+                    // Modify the format of cartItems to match the expected format on the server
+                    const formattedItems = cartItems.map(item => {
+                        return {
+                            product: item.id,
+                            quantity: item.quantity
+                        };
+                    });
+
+                    const userData = {
+                        user: user,
+                        items: formattedItems  // Use the modified format
+                    };
+
+                    await axios.post('http://127.0.0.1:8000/order/', userData, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+
+                    // Clear the cart and update the display
+                    cartItems = [];
+                    updateCartDisplay();
+                    saveCartToLocalStorage();
+
+                    alert('Order placed successfully!');
+                } catch (error) {
+                    console.error('Error during checkout:', error.response);
+                    alert('Failed to place the order. Please try again.');
+                }
             } else {
-                cart = JSON.parse(localStorage.getItem('cart'))
+                window.location.href = 'login.html';
             }
-        }
+        };
 
-      
-        const checkOut = async () => {
-            const token = sessionStorage.getItem("token")
-            const myCart = cart
-            console.log(cart);
-            console.log(token);
-            let response = await axios.post(MY_SERVER + "order",  {"items":cart.data} , {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token,
-                },
-            });
-            console.log(response.data);
+
+
+        const isLoggedIn = () => {
+            const token = sessionStorage.getItem("token");
+            return token !== null && token !== undefined;
+        };
+
+        // Function to get the username from the token
+        const getUsername = (token) => {
+            const decodedToken = parseJwt(token);
+            return decodedToken ? decodedToken.username : null;
+        };
+
+        // Function to update the UI based on login status
+        const updateUI = () => {
+            const usernameDisplay = document.getElementById('usernameDisplay');
+            if (isLoggedIn()) {
+                // If logged in, display the username
+                const token = sessionStorage.getItem("token");
+                const username = getUsername(token);
+                usernameDisplay.innerHTML = `Welcome, ${username}!`;
+            } else {
+                // If not logged in, hide the username display
+                usernameDisplay.innerHTML = '';
+            }
+        };
+        
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            return JSON.parse(jsonPayload);
         }
     </script>
+</body>
+
+</html>
 </body>
 
 </html>

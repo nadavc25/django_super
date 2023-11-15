@@ -19,19 +19,27 @@ def member_only(req):
     print(req.user)
     return Response({"secret":"waga waga"})
 
-@api_view(["post"])
-def register(req):
-    print(req.data)
-    User.objects.create_user(username=req.data["username"],password=req.data["password"])
-    return Response ({"user":"created"})
+@api_view(['POST'])
+def register(request):
+    # Get username and password from the request data
+    username = request.data.get('username')
+    password = request.data.get('password')
 
+    # Check if the username already exists
+    if User.objects.filter(username=username).exists():
+        return Response({'detail': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Create a new user if the username is unique
+    user = User.objects.create_user(username=username, password=password)
+
+    # You can customize the response according to your needs
+    return Response({'detail': 'User registered successfully'}, status=status.HTTP_201_CREATED)
 
     
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 
-# @permission_classes([IsAuthenticated])
 class ProductView(APIView):
     def get(self, request):
         products = Product.objects.all()
@@ -70,8 +78,8 @@ class ProductView(APIView):
 # @permission_classes([IsAuthenticated])
 class CategoryView(APIView):
     def get(self, request):
-        products = Category.objects.all()
-        serializer = CategorySerializer(Category, many=True)
+        category = Category.objects.all()
+        serializer = CategorySerializer(category, many=True)
         return Response(serializer.data)
 
     def post(self, request):
@@ -83,11 +91,11 @@ class CategoryView(APIView):
 
     def put(self, request, pk):
         try:
-            product = Category.objects.get(pk=pk)
+            category = Category.objects.get(pk=pk)
         except Category.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = CategorySerializer(product, data=request.data)
+        serializer = CategorySerializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -105,13 +113,12 @@ class CategoryView(APIView):
 @permission_classes([IsAuthenticated])
 class OrderView(APIView):
     def post(self, request):
-        serializer = OrderSerializer(data=request.data, context={'user': request.user})
+        serializer = OrderSerializer(data=request.data, context={'request': request})  # Include 'request' in the context
         if serializer.is_valid():
             order = serializer.save()
             
             # Create OrderDetails objects for each item in the list
             for item in request.data["items"]:
-                print(item)
                 item['order'] = order.id  # Assuming there's a foreign key to Order in OrderDetails
                 serializerDt = OrderDetailsSerializer(data=item)
                 if serializerDt.is_valid():
@@ -126,3 +133,4 @@ class OrderView(APIView):
         my_model = request.user.order_set.all()
         serializer = OrderSerializer(my_model, many=True)
         return Response(serializer.data)
+

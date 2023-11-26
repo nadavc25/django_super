@@ -118,7 +118,7 @@
                 products.map(product => `
                     <div class="col">
                         <div class="card product-card">
-                            <img src="http://127.0.0.1:8000/static${product.img}" class="card-img-top" alt="Product Image">
+                            <img src="https://dgango-supermarker.onrender.com${product.img}" class="card-img-top" alt="Product Image">
                             <div class="card-body">
                                 <h5 class="card-title">${product.description}</h5>
                                 <p class="card-text">$${product.price.toFixed(2)}</p>
@@ -225,7 +225,7 @@
 
 
         // Fetch products from the server
-        axios.get('http://127.0.0.1:8000/products')
+        axios.get('https://dgango-supermarker.onrender.com')
             .then(response => {
                 products = response.data;
                 renderProducts(products);
@@ -255,7 +255,7 @@
                         items: formattedItems  // Use the modified format
                     };
 
-                    await axios.post('http://127.0.0.1:8000/order/', userData, {
+                    await axios.post('https://dgango-supermarker.onrender.com/order/', userData, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }

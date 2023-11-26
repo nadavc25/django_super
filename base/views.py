@@ -19,6 +19,13 @@ def member_only(req):
     print(req.user)
     return Response({"secret":"waga waga"})
 
+class Logout(APIView):
+    def get(self, request, format=None):
+        # simply delete the token to force a login
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 def register(request):
     # Get username and password from the request data

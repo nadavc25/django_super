@@ -1,0 +1,113 @@
+/* Add this to your styles.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(90deg, #4CAF50, #2196F3);
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: linear-gradient(45deg, #007BFF, #00BCD4);
+    color: #ffffff;
+    text-align: center;
+    padding: 1em;
+    border-radius: 5px;
+}
+
+nav {
+    background: linear-gradient(45deg, #007BFF, #00BCD4);
+    color: #ffffff;
+    text-align: center;
+    padding: 0.5em;
+    border-radius: 5px;
+}
+
+a {
+    color: #ffffff;
+    text-decoration: none;
+    margin: 0 1em;
+}
+
+button {
+    background: #28a745;
+    color: #ffffff;
+    padding: 0.5em 1em;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.container {
+    margin: 2em auto;
+    max-width: 800px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 1em;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-display {
+    margin-bottom: 2em;
+}
+
+.shopping-cart {
+    padding: 1em;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 1em;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-img-top {
+    max-width: 100%;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-body {
+    text-align: center;
+}
+
+.row-cols-md-3 .col {
+    flex: 0 0 31%;
+    max-width: 31%;
+}
+
+.row-cols-md-5 .col {
+    flex: 0 0 18%;
+    max-width: 18%;
+}
+
+/* Bootstrap styles */
+
+.btn-primary {
+    background-color: #007BFF;
+    border-color: #007BFF;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #218838;
+}

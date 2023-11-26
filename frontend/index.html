@@ -100,7 +100,9 @@
 
     <div class="container mt-4" id="cartContainer">
         <h2>Your Cart</h2>
-        <div id="cart"></div>
+        <div id="cartTotal"></div>
+        <div id="cartItems"></div>
+        <button onclick="clearCart()" class="btn btn-danger mt-2">Clear Cart</button>
         <button onclick="checkout()" class="btn btn-primary mt-2">Checkout</button>
     </div>
 
@@ -116,7 +118,7 @@
                 products.map(product => `
                     <div class="col">
                         <div class="card product-card">
-                            <img src="${product.img}" class="card-img-top" alt="Product Image">
+                            <img src="http://127.0.0.1:8000/static${product.img}" class="card-img-top" alt="Product Image">
                             <div class="card-body">
                                 <h5 class="card-title">${product.description}</h5>
                                 <p class="card-text">$${product.price.toFixed(2)}</p>
@@ -145,16 +147,76 @@
             }
         };
 
-        const updateCartDisplay = () => {
-            cart.innerHTML = cartItems.map(item => `
-                <div class="card mb-2">
-                    <div class="card-body">
-                        <h6 class="card-title">${item.description}</h6>
-                        <p class="card-text">Quantity: ${item.quantity}</p>
-                    </div>
-                </div>
-            `).join('');
+        const clearCart = () => {
+            cartItems = [];
+            updateCartDisplay();
+            saveCartToLocalStorage();
         };
+
+        const updateCartDisplay = () => {
+            const cartTotalElement = document.getElementById('cartTotal');
+            const cartItemsContainer = document.getElementById('cartItems');
+
+            // Calculate the total price
+            const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+            // Display the total price
+            cartTotalElement.innerHTML = `Total: $${totalPrice.toFixed(2)}`;
+
+            // Display each item in the cart
+            cartItemsContainer.innerHTML = cartItems.map(item => `
+        <div class="card mb-2">
+            <div class="card-body">
+                <h6 class="card-title">${item.description}</h6>
+                <p class="card-text">Price: $${item.price.toFixed(2)}</p>
+                <p class="card-text">Quantity: 
+                    <button class="btn btn-sm btn-secondary" onclick="updateCartItemQuantity(${item.id}, -1)">-</button>
+                    ${item.quantity}
+                    <button class="btn btn-sm btn-secondary" onclick="updateCartItemQuantity(${item.id}, 1)">+</button>
+                </p>
+                <p class="card-text">Subtotal: $${(item.price * item.quantity).toFixed(2)}</p>
+                <button class="btn btn-danger" onclick="removeFromCart(${item.id})">Remove</button>
+            </div>
+        </div>
+    `).join('');
+        };
+
+
+        const updateCartItemQuantity = (productId, quantityChange) => {
+            const productIndex = cartItems.findIndex(item => item.id === productId);
+
+            if (productIndex !== -1) {
+                // Update the quantity
+                cartItems[productIndex].quantity += quantityChange;
+
+                // Ensure the quantity is at least 1
+                if (cartItems[productIndex].quantity < 1)
+                    removeFromCart(productId)
+
+
+                // Update the cart display
+                updateCartDisplay();
+
+                // Save the updated cart to localStorage
+                saveCartToLocalStorage();
+            }
+        };
+
+        const removeFromCart = (productId) => {
+            const productIndex = cartItems.findIndex(item => item.id === productId);
+
+            if (productIndex !== -1) {
+                // Remove the item from the cart
+                cartItems.splice(productIndex, 1);
+
+                // Update the cart display
+                updateCartDisplay();
+
+                // Save the updated cart to localStorage
+                saveCartToLocalStorage();
+            }
+        };
+
 
         const saveCartToLocalStorage = () => {
             localStorage.setItem('cart', JSON.stringify(cartItems));
@@ -167,6 +229,7 @@
             .then(response => {
                 products = response.data;
                 renderProducts(products);
+                updateCartDisplay();
                 // Update the UI after fetching products
                 updateUI();
             })
@@ -239,7 +302,7 @@
                 usernameDisplay.innerHTML = '';
             }
         };
-        
+
         function parseJwt(token) {
             var base64Url = token.split('.')[1];
             var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');

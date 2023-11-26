@@ -13,7 +13,7 @@ class Product(models.Model):
     id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=100)
     price = models.FloatField()
-    img = models.ImageField(upload_to='static/')
+    img = models.ImageField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     def __str__(self):

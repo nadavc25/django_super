@@ -1,3 +1,5 @@
+<!-- login.html -->
+
 <!DOCTYPE html>
 <html>
 
@@ -14,20 +16,6 @@
 <body>
     <div class="main">
         <input type="checkbox" id="chk" aria-hidden="true">
-
-<!-- Signup Form -->
-<div class="signup">
-    <form>
-        <label for="chk" aria-hidden="true">Sign up</label>
-        <input type="text" id="signupUsername" placeholder="Choose a username">
-        <input type="password" id="signupPassword" placeholder="Choose a password">
-        <button type="button" onclick="signup()">Sign up</button>
-    </form>
-    <div id="signupFeedback"></div>
-    <div id="signupGreat"></div>
-</div>
-
-
         <div class="login">
             <form>
                 <label for="chk" aria-hidden="true">Login</label>
@@ -36,6 +24,18 @@
                 <button type="button" onclick="login()">Login</button>
             </form>
             <div id="successMessage"></div>
+        </div>
+
+        <!-- Signup Form -->
+        <div class="signup">
+            <form>
+                <label for="chk" aria-hidden="true">Sign up</label>
+                <input type="text" id="signupUsername" placeholder="Choose a username">
+                <input type="password" id="signupPassword" placeholder="Choose a password">
+                <button type="button" onclick="signup()">Sign up</button>
+            </form>
+            <div id="signupFeedback"></div>
+            <div id="signupGreat"></div>
         </div>
     </div>
 </body>
